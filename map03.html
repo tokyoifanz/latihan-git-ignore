@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <tile>Webgis 2: GeoServer Layer</tile>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link rel="stylesheet" href="libs/leaflet/leaflet.css">
+    <link rel="stylesheet" href="css/mymap.css">
+
+    <script src="libs/leaflet/leaflet.js"></script>
+    <script src="leaflet/leaflet-ajax-gh-pages/dist/leaflet.ajax.js"></script>
+    <script src="libs/leaflet-bing-layer-gh-pages/leaflet-bing-layer.min.js"></script>
+    <script src="js/my_bing_key.js"></script>
+  </head>
+  <body>
+    <div id="mapdiv"></div>
+    <script>
+      var mymap = L.map("mapdiv").setView([-7.3685,109.8984], 11);
+
+      var osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          subdomains: ['a', 'b', 'c']
+        }
+      );
+      
+      osm.addTo(mymap);
+      
+      var wonosobo_kecamatan = new L.GeoJSON.AJAX("layers/kecamatanwsb.php");
+      wonosobo_kecamatan.addTo(mymap);
+
+      var wonosobo_tanah = new L.GeoJSON.AJAX("layers/jenistanah.php");
+
+      var wonosobo_pariwisata = new L.GeoJSON.AJAX("layers/pariwisata.php");
+
+      //tambahkan bing basemap
+      var bingAerials = L.tileLayer.bing({
+        bingMapsKey: myBingKey,
+        attribution: '&copy: <a href="https://bing.com">Bing Maps</a>',
+        imagerySet: 'Aerial'
+      });
+
+      var bingAerialWithLabel = L.tileLayer.bing({
+        bingMapsKey: myBingKey,
+        attribution: '&copy: <a href="https://bing.com">Bing Maps</a>',
+        imagerySet: 'AerialWithLabelsOnDemand'
+      });
+
+      var bingRoad = L.tileLayer.bing({
+        bingMapsKey: myBingKey,
+        attribution: '&copy: <a href="https://bing.com">Bing Maps</a>',
+        imagerySet: 'Road'
+      });
+
+
+      // layer control
+      var basemap = {
+        "OpenStreetMap": osm,
+        "Bing Maps": bingAerials,
+        "Bing Road": bingRoad,
+        "Bing Aeruak with Label": bingAerialWithLabel
+      };
+
+      var overlaymap = {
+        "Kecamatan": wonosobo_kecamatan,
+        "Jenis Tanah": wonosobo_tanah,
+        "Pariwisata": wonosobo_pariwisata
+      };
+
+      L.control.layers(basemap, overlaymap).addTo(mymap);
+    </script>
+  </body>
+</html>

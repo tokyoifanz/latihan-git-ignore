@@ -1,0 +1,18 @@
+{
+  "name": "leaflet-switch-scale-control",
+  "version": "0.1.0",
+  "homepage": "https://github.com/Flexberry/leaflet-switch-scale-control",
+  "license": "MIT",
+  "main": [
+    "src/L.Control.SwitchScaleControl.js",
+    "src/L.Control.SwitchScaleControl.css"
+  ],
+  "ignore": [
+    "**/.*",
+    "bower_components"
+  ],
+  "dependencies": {
+    "leaflet": "1.0.1",
+    "semantic-ui": "^2.2.4"
+  }
+}

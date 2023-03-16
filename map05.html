@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <tile>Webgis 2: GeoServer Layer</tile>
+    <link rel="shortcut icon" href="img/3.png"/>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="libs/leaflet/leaflet.css">
+    <link rel="stylesheet" href="leaflet/style.css">
+    <link rel="stylesheet" href="leaflet/leaflet-search-master/src/leaflet-search.css"/>
+    <link rel="stylesheet" href="leaflet/leaflet.defaultextent-master/dist/leaflet.defaultextent.css" />
+    <link rel="stylesheet" href="leaflet/leaflet-groupedlayercontrol-gh-pages/src/leaflet.groupedlayercontrol.css"/>    <script src="js/jquery-3.6.4.min.js"></script>
+    <script src="libs/leaflet/leaflet.js"></script>
+    <script src="leaflet/leaflet-ajax-gh-pages/dist/leaflet.ajax.js"></script>
+    <script src="libs/leaflet-bing-layer-gh-pages/leaflet-bing-layer.min.js"></script>
+    <script src="js/my_bing_key.js"></script>
+    <script src="leaflet/leaflet-search-master/src/leaflet-search.js"></script>
+    <script src="leaflet/leaflet.defaultextent-master/dist/leaflet.defaultextent.js"></script>
+    <script src="leaflet/leaflet-groupedlayercontrol-gh-pages/src/leaflet.groupedlayercontrol.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="leaflet/leaflet-providers-master/leaflet-providers.js"></script>
+  </head>
+  <body>
+    <div id="mycontainer">
+      <div id="mapdiv"></div>
+      <div id="legenddiv">
+        <div class="legend">
+          <h2>LEGENDA</h2>
+          <div id="simplygeo_wsb" class="legenditem" style="display:show;">
+            <p>Jalan</p>
+            <img src="/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&LAYER=SHP_File:jalan"/>
+          </div>
+          <div id="simplygeo_kecwsb" class="legenditem" style="display:show;">
+            <p>Kecamatan</p>
+            <img src="/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&LAYER=SHP_File:Kecamatan_WSB"/>
+          </div>
+          <div id="simplygeo_pariwisatawsb" class="legenditem" style="display:show;">
+            <p>Pariwisata</p>
+            <img src="libs/leaflet/images/custom.png"/>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    
+    
+    <script>
+      
+      var mymap = L.map("mapdiv").setView([-7.3685,109.8984], 11);
+
+      L.control.scale({
+        imperial: false,
+        metric: true,
+        position: 'bottomleft',
+        maxWidth: 100
+        }).addTo(mymap);
+
+      var osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          subdomains: ['a', 'b', 'c']
+        }
+      );
+      
+      osm.addTo(mymap);
+
+      var wonosobo_jalan = L.tileLayer.wms("/geoserver/wms?", {
+        attribution: "&copy; Simply Geospatial",
+        layers: "SHP_File:jalan",
+        format: "image/png",
+        transparent: true
+      });
+
+      var wonosobo_kecamatan = L.tileLayer.wms("/geoserver/wms?", {
+        attribution: "&copy; Simply Geospatial",
+        layers: "SHP_File:Kecamatan_WSB",
+        format: "image/png",
+        transparent: true,
+        opacity: 0.5
+      });
+
+      var wonosobo_PL = L.tileLayer.wms("/geoserver/wms?", {
+        attribution: "&copy; Simply Geospatial",
+        layers: "SHP_File:PL_wonosobo",
+        format: "image/png",
+        transparent: true
+      });
+
+      var wonosobo_pariwisata = new L.GeoJSON.AJAX("layers/pariwisata.php",{
+        style: function(feature){
+          var myIcon = L.icon({
+            iconUrl: 'libs\leaflet\images\custom.png',
+            iconSize: [38, 95],
+            iconAnchor: [22, 94],
+            popupAnchor: [-3, -76],
+            shadowUrl: 'my-icon-shadow.png',
+            shadowSize: [68, 95],
+            shadowAnchor: [22, 94]
+          });
+      },
+        onEachFeature: function(feature, layer){
+        layer.bindPopup("<center>" + "<strong>" + "<h1>" + feature.properties.f3 + "</h1>" + "</strong>" +"</center>" 
+                        + "<br>" + "<p>" + feature.properties.deskripsi + "</p>" 
+                        + '<a href=' + feature.properties.link + 'target="_blank">' + 'Lebih Lanjut...' + '</a>'
+                        + '<br>'   
+                        + '<img src="'+ feature.properties.photos +'" style="width:300px;height:auto;">')
+        }});
+
+      wonosobo_kecamatan.addTo(mymap);
+      wonosobo_jalan.addTo(mymap);
+      
+            //var layer = new ol.layer.Tile({
+        //source: new ol.source.TileWMS({
+          //attribution: '@geoserver',
+          //url:'http://localhost:8080/geoserver/geos/wms?',
+          //params:{
+            //'LAYERS': 'geos:pl_final'
+          //}
+        //})
+      //});
+      //mymap.addLayer(layer)
+
+
+      //tambahkan bing basemap
+      
+      var bingAerials = L.tileLayer.bing({
+        bingMapsKey: myBingKey,
+        attribution: '&copy: <a href="https://bing.com">Bing Maps</a>',
+        imagerySet: 'Aerial'
+      });
+
+      var bingAerialWithLabel = L.tileLayer.bing({
+        bingMapsKey: myBingKey,
+        attribution: '&copy: <a href="https://bing.com">Bing Maps</a>',
+        imagerySet: 'AerialWithLabelsOnDemand'
+      });
+
+      var bingRoad = L.tileLayer.bing({
+        bingMapsKey: myBingKey,
+        attribution: '&copy: <a href="https://bing.com">Bing Maps</a>',
+        imagerySet: 'Road'
+      });
+
+
+      // layer control
+      var basemap = {
+        "OpenStreetMap": osm,
+        "Bing Maps": bingAerials,
+        "Bing Road": bingRoad,
+        "Bing Aeruak with Label": bingAerialWithLabel
+      };
+
+      var overlaymap = {
+        "KABUPATEN WONOSOBO": {
+          "Kecamatan": wonosobo_kecamatan,
+          "Jalan": wonosobo_jalan,
+          "Pariwisata": wonosobo_pariwisata,
+          "Penggunaan Lahan": wonosobo_PL
+        }
+      };
+
+      var options = {
+        exclusiveGroups: ["KABUPATEN WONOSOBO"]
+      }
+      L.control.groupedLayers(basemap, overlaymap).addTo(mymap);
+
+      // object info
+      mymap.on('click', function(e) {
+        var pos = e.latlng;
+        var pt = mymap.latLngToContainerPoint(pos);
+        var w = mymap.getSize().x;
+        var h = mymap.getSize().y;
+        var bnd = mymap.getBounds();
+        var west = bnd.getWest();
+        var east = bnd.getEast();
+        var north = bnd.getNorth();
+        var south = bnd.getSouth();
+
+        $.ajax({
+          url: "/geoserver/wms",
+          data: {
+            service: "WMS",
+            version: "1.1.1",
+            request: "GetFeatureInfo",
+            info_format: "application/json",
+            layers: "SHP_File:Kecamatan_WSB",
+            query_layers: "SHP_File:Kecamatan_WSB",
+            width: w,
+            height: h,
+            x: parseInt(pt.x),
+            y: parseInt(pt.y),
+            bbox: west+','+south+','+east+','+north
+          },
+          success: function(ajaxresult) {
+            console.log(ajaxresult);
+            if (typeof(ajaxresult) != 'undefined') {
+              if (ajaxresult.features.length > 0) {
+                var pro = ajaxresult.features[0].properties;
+                var content = "<table><tr><th>Field</th><th>Value</th></tr>";
+                  $.each(pro, function(index, value) {
+                    content += "<tr><td>" + index + "</td><td>" + value + "</td></tr>";
+                  });
+                  content += "</table>"
+                L.popup().setLatLng(pos).setContent(content).openOn(mymap);
+              }
+            }       
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            alert("ERROR");
+          },
+        });
+      });
+    
+    //Control Search
+    const searchControl = new L.Control.Search({
+      layer: wonosobo_pariwisata,
+      propertyName: 'f3'
+    });
+    mymap.addControl(searchControl);
+    </script>
+  </body>
+</html>
